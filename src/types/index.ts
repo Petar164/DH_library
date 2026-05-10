@@ -1,0 +1,60 @@
+export type Role = 'pending' | 'viewer' | 'contributor' | 'admin'
+export type Brand = 'dior_homme' | 'saint_laurent'
+export type MediaType = 'image' | 'video' | 'interview' | 'scan'
+export type Season = 'SS' | 'AW'
+
+export interface Profile {
+  id: string
+  username: string
+  full_name: string | null
+  bio: string | null
+  avatar_url: string | null
+  role: Role
+  created_at: string
+  updated_at: string
+}
+
+export interface SeasonRecord {
+  id: string
+  name: string
+  brand: Brand
+  year: number
+  period: Season
+  description: string | null
+  cover_image_url: string | null
+  created_by: string | null
+  created_at: string
+  media_count?: number
+}
+
+export interface Celebrity {
+  id: string
+  name: string
+  bio: string | null
+  cover_image_url: string | null
+  created_by: string | null
+  created_at: string
+  media_count?: number
+}
+
+export interface Media {
+  id: string
+  title: string | null
+  description: string | null
+  type: MediaType
+  file_url: string
+  file_path: string
+  file_size: number | null
+  mime_type: string | null
+  width: number | null
+  height: number | null
+  season_id: string | null
+  celebrity_id: string | null
+  brand: Brand | null
+  tags: string[] | null
+  uploaded_by: string | null
+  created_at: string
+  season?: SeasonRecord
+  celebrity?: Celebrity
+  uploader?: Profile
+}
