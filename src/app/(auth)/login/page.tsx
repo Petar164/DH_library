@@ -29,7 +29,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm bg-white/80 backdrop-blur-sm p-10 border border-zinc-200">
         <div className="mb-10 text-center">
-          <h1 className="text-[11px] font-bold tracking-[0.4em] uppercase mb-1">Archive</h1>
+          <h1 className="font-[var(--font-pixel)] text-[22px] tracking-[0.2em] uppercase mb-1 leading-none">Archive</h1>
           <p className="text-[10px] tracking-[0.2em] uppercase text-zinc-400">Private access</p>
         </div>
 

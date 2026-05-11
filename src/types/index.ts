@@ -1,4 +1,18 @@
 export type Role = 'pending' | 'viewer' | 'contributor' | 'admin'
+
+export type FolderType = 'season' | 'celebrity' | 'magazine_scan' | 'promo' | 'piece'
+
+export interface Folder {
+  id: string
+  name: string
+  description: string | null
+  type: FolderType
+  cover_image_url: string | null
+  created_by: string | null
+  created_at: string
+  creator?: Pick<Profile, 'username'>
+  media_count?: number
+}
 export type Brand = 'dior_homme' | 'saint_laurent'
 export type MediaType = 'image' | 'video' | 'interview' | 'scan'
 export type Season = 'SS' | 'AW'

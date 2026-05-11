@@ -21,7 +21,7 @@ export default function PendingPage() {
       <div className="max-w-xs bg-white/80 backdrop-blur-sm border border-zinc-200 p-12">
         <div className="w-8 h-8 border border-zinc-300 rotate-45 mx-auto mb-10" />
 
-        <h1 className="text-[11px] font-bold tracking-[0.4em] uppercase mb-6">Archive</h1>
+        <h1 className="font-[var(--font-pixel)] text-[22px] tracking-[0.2em] uppercase mb-6 leading-none">Archive</h1>
         <p className="text-xs tracking-wide text-zinc-700 leading-relaxed mb-2">
           your account is pending approval.
         </p>

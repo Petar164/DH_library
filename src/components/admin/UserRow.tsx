@@ -29,7 +29,7 @@ export function UserRow({ user }: { user: Profile }) {
   }
 
   return (
-    <div className="grid grid-cols-[1fr_auto_auto_auto] gap-4 py-4 items-center">
+    <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_auto_auto_auto] gap-4 py-4 items-center">
       {/* User info */}
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-8 h-8 overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200">

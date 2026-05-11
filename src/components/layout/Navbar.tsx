@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Profile } from '@/types'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
-import { LogOut, Upload, LayoutDashboard, User, Menu, X } from 'lucide-react'
+import { User } from 'lucide-react'
 
 interface NavbarProps {
   profile: Profile
@@ -26,114 +26,119 @@ export function Navbar({ profile }: NavbarProps) {
 
   const navLinks = [
     { href: '/library', label: 'Library' },
-    { href: '/library?view=seasons', label: 'Seasons' },
-    { href: '/library?view=celebrities', label: 'Celebrities' },
+    ...(profile.role === 'contributor' || profile.role === 'admin'
+      ? [{ href: '/upload', label: 'Upload' }]
+      : []),
+    ...(profile.role === 'admin'
+      ? [{ href: '/admin', label: 'Admin' }]
+      : []),
   ]
 
   return (
-    <header className="sticky top-0 z-50 bg-black border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between">
-        {/* Brand */}
-        <Link href="/library" className="text-[11px] font-bold tracking-[0.35em] uppercase text-white">
-          Archive
+    <header
+      className="sticky top-0 z-50"
+      style={{
+        background: '#D4D0C8',
+        borderBottom: '2px solid #808080',
+        boxShadow: 'inset 0 1px 0 #fff, inset -1px 0 0 #808080',
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-3 sm:px-5 h-11 flex items-center justify-between gap-4">
+
+        {/* Brand — Mac "Apple menu" style */}
+        <Link
+          href="/library"
+          className="font-[var(--font-pixel)] text-[17px] leading-none tracking-[0.08em] text-black px-2 py-1 hover:bg-black hover:text-white transition-none select-none whitespace-nowrap"
+          style={{ fontSmooth: 'never', WebkitFontSmoothing: 'none' }}
+        >
+          Scan Library
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        {/* Desktop nav — Mac menu bar items */}
+        <nav className="hidden md:flex items-center h-full">
           {navLinks.map(link => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                'text-[10px] tracking-[0.2em] uppercase transition-colors',
-                pathname === link.href || (link.href === '/library' && pathname === '/library')
-                  ? 'text-white font-semibold'
-                  : 'text-white/40 hover:text-white/80'
+                'h-full flex items-center px-3 text-[11px] font-mono tracking-wide transition-none select-none',
+                pathname.startsWith(link.href) && link.href !== '/library'
+                  ? 'bg-black text-white'
+                  : pathname === '/library' && link.href === '/library'
+                  ? 'bg-black text-white'
+                  : 'text-black hover:bg-black hover:text-white'
               )}
+              style={{ WebkitFontSmoothing: 'none' }}
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        {/* Right actions */}
-        <div className="flex items-center gap-4">
-          {(profile.role === 'contributor' || profile.role === 'admin') && (
-            <Link
-              href="/upload"
-              className="hidden sm:flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase text-white/40 hover:text-white/80 transition-colors"
-            >
-              <Upload className="w-3 h-3" />
-              Upload
-            </Link>
-          )}
-
-          {profile.role === 'admin' && (
-            <Link
-              href="/admin"
-              className="hidden sm:flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase text-white/40 hover:text-white/80 transition-colors"
-            >
-              <LayoutDashboard className="w-3 h-3" />
-              Admin
-            </Link>
-          )}
-
+        {/* Right — profile + signout */}
+        <div className="flex items-center gap-1">
           <Link
             href={`/profile/${profile.username}`}
-            className="w-7 h-7 rounded-full overflow-hidden bg-white/10 flex-shrink-0 ring-1 ring-white/20 hover:ring-white/50 transition-all"
+            className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-mono text-black hover:bg-black hover:text-white transition-none"
+            style={{ WebkitFontSmoothing: 'none' }}
           >
             {profile.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover grayscale" />
+              <img src={profile.avatar_url} alt={profile.username} className="w-5 h-5 object-cover grayscale" style={{ imageRendering: 'pixelated' }} />
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <User className="w-3.5 h-3.5 text-white/50" />
+              <div className="w-5 h-5 bg-zinc-400 flex items-center justify-center">
+                <User className="w-3 h-3 text-white" />
               </div>
             )}
+            <span className="hidden sm:block">@{profile.username}</span>
           </Link>
 
           <button
-            className="md:hidden text-white/50 hover:text-white transition-colors"
-            onClick={() => setMenuOpen(!menuOpen)}
+            onClick={signOut}
+            className="hidden md:block px-2 py-1 text-[11px] font-mono text-black hover:bg-black hover:text-white transition-none"
+            style={{ WebkitFontSmoothing: 'none' }}
           >
-            {menuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            Sign out
           </button>
 
+          {/* Mobile menu toggle — Mac-style */}
           <button
-            onClick={signOut}
-            className="hidden md:flex items-center text-white/30 hover:text-white/70 transition-colors"
-            title="Sign out"
+            className="md:hidden px-2 py-1 text-[11px] font-mono text-black hover:bg-black hover:text-white"
+            onClick={() => setMenuOpen(!menuOpen)}
+            style={{ WebkitFontSmoothing: 'none' }}
           >
-            <LogOut className="w-3.5 h-3.5" />
+            {menuOpen ? '▲ Menu' : '▼ Menu'}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu — Mac dropdown style */}
       {menuOpen && (
-        <div className="md:hidden bg-black border-t border-white/10 px-4 py-5 flex flex-col gap-5">
+        <div
+          className="md:hidden flex flex-col"
+          style={{
+            background: '#D4D0C8',
+            borderTop: '1px solid #808080',
+            boxShadow: 'inset 0 1px 0 #fff',
+          }}
+        >
           {navLinks.map(link => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setMenuOpen(false)}
-              className="text-[10px] tracking-[0.25em] uppercase text-white/50 hover:text-white"
+              className="px-4 py-2.5 text-[11px] font-mono text-black hover:bg-black hover:text-white border-b border-[#808080]/30"
+              style={{ WebkitFontSmoothing: 'none' }}
             >
               {link.label}
             </Link>
           ))}
-          {(profile.role === 'contributor' || profile.role === 'admin') && (
-            <Link href="/upload" onClick={() => setMenuOpen(false)} className="text-[10px] tracking-[0.25em] uppercase text-white/50 hover:text-white flex items-center gap-2">
-              <Upload className="w-3 h-3" /> Upload
-            </Link>
-          )}
-          {profile.role === 'admin' && (
-            <Link href="/admin" onClick={() => setMenuOpen(false)} className="text-[10px] tracking-[0.25em] uppercase text-white/50 hover:text-white flex items-center gap-2">
-              <LayoutDashboard className="w-3 h-3" /> Admin
-            </Link>
-          )}
-          <button onClick={signOut} className="text-[10px] tracking-[0.25em] uppercase text-white/50 hover:text-white flex items-center gap-2 text-left">
-            <LogOut className="w-3 h-3" /> Sign out
+          <button
+            onClick={signOut}
+            className="px-4 py-2.5 text-[11px] font-mono text-black hover:bg-black hover:text-white text-left"
+            style={{ WebkitFontSmoothing: 'none' }}
+          >
+            Sign out
           </button>
         </div>
       )}

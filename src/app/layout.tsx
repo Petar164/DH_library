@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { VT323 } from "next/font/google";
 import "./globals.css";
+
+const vt323 = VT323({ weight: "400", subsets: ["latin"], variable: "--font-pixel" });
 
 export const metadata: Metadata = {
   title: "Archive",
@@ -12,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <body className="min-h-full flex flex-col text-black antialiased">
+    <html lang="en" className={`h-full ${vt323.variable}`}>
+      <body className="min-h-full flex flex-col text-black">
         {children}
       </body>
     </html>

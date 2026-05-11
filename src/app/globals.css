@@ -2,11 +2,12 @@
 
 :root {
   --foreground: #000000;
-  --muted: #606060;
-  --border: #B4B4B4;
-  --silver-light: #F2F2F2;
-  --silver-mid: #C8C8C8;
-  --silver-dark: #AAAAAA;
+  --muted: #505050;
+  --border: #909090;
+  --silver-light: #ECECEC;
+  --silver-mid: #BEBEBE;
+  --silver-dark: #999999;
+  --font-pixel: var(--font-pixel);
 }
 
 @theme inline {
@@ -26,13 +27,19 @@ html {
 body {
   min-height: 100%;
   color: #000000;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Courier New', Courier, monospace;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: auto;
   position: relative;
 }
 
-/* Metallic silver wash tag background — fixed, full viewport */
+/* Pixel-label utility — use on tracking UI labels */
+.px-label {
+  font-family: var(--font-pixel), 'Courier New', monospace;
+  -webkit-font-smoothing: none;
+}
+
+/* Aged silver background with visible scanlines */
 body::before {
   content: '';
   position: fixed;
@@ -42,45 +49,54 @@ body::before {
     repeating-linear-gradient(
       0deg,
       transparent 0px,
-      transparent 3px,
-      rgba(0, 0, 0, 0.012) 3px,
-      rgba(0, 0, 0, 0.012) 4px
+      transparent 2px,
+      rgba(0, 0, 0, 0.045) 2px,
+      rgba(0, 0, 0, 0.045) 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 6px,
+      rgba(0, 0, 0, 0.008) 6px,
+      rgba(0, 0, 0, 0.008) 7px
     ),
     linear-gradient(
       148deg,
-      #f6f6f6 0%,
-      #e2e2e2 10%,
-      #c6c6c6 22%,
-      #d9d9d9 34%,
-      #eaeaea 46%,
-      #bebebe 58%,
-      #d4d4d4 68%,
-      #e8e8e8 78%,
-      #c4c4c4 88%,
-      #eeeeee 100%
+      #ebebeb 0%,
+      #d0d0d0 12%,
+      #b2b2b2 26%,
+      #c8c8c8 38%,
+      #dedede 50%,
+      #aaaaaa 62%,
+      #c0c0c0 72%,
+      #d8d8d8 82%,
+      #b0b0b0 90%,
+      #e4e4e4 100%
     );
 }
 
-/* Subtle grain overlay */
+/* Heavy grain overlay — coarse, visible pixels */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
-  opacity: 0.032;
+  opacity: 0.1;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)'/%3E%3C/svg%3E");
+  image-rendering: pixelated;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
   background-repeat: repeat;
-  background-size: 200px 200px;
+  background-size: 80px 80px;
 }
 
 /* Images: grayscale by default, reveal on hover */
 .media-img {
-  filter: grayscale(100%) contrast(1.08);
-  transition: filter 0.5s ease;
+  filter: grayscale(100%) contrast(1.15);
+  transition: filter 0.4s ease;
+  image-rendering: auto;
 }
 .media-img:hover {
-  filter: grayscale(0%) contrast(1);
+  filter: grayscale(20%) contrast(1.05);
 }
 
 img {
@@ -97,16 +113,16 @@ img {
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 3px;
-  height: 3px;
+  width: 2px;
+  height: 2px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #B4B4B4;
+  background: #888;
 }
 
 ::selection {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.18);
 }

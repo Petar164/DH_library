@@ -26,7 +26,7 @@ export default async function CelebrityPage({ params }: { params: Promise<{ id: 
         <ChevronLeft className="w-3 h-3" /> Celebrities
       </Link>
 
-      <div className="flex items-start gap-6 mb-10 border-b border-zinc-200 pb-8">
+      <div className="flex flex-col sm:flex-row items-start gap-6 mb-10 border-b border-zinc-200 pb-8">
         {celebrity.cover_image_url && (
           // eslint-disable-next-line @next/next/no-img-element
           <img

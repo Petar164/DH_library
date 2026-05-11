@@ -19,7 +19,7 @@ export function ContentRow({ item }: { item: Media }) {
   }
 
   return (
-    <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 py-3.5 items-center">
+    <div className="grid grid-cols-[auto_1fr_auto] sm:grid-cols-[auto_1fr_auto_auto_auto] gap-4 py-3.5 items-center">
       <div className="w-10 h-10 bg-zinc-100 overflow-hidden flex-shrink-0 border border-zinc-100">
         {(item.type === 'image' || item.type === 'scan') && item.file_url ? (
           // eslint-disable-next-line @next/next/no-img-element

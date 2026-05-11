@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Media } from '@/types'
-import { X, ChevronLeft, ChevronRight, Info } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Info, FolderPlus, Download } from 'lucide-react'
 import { brandLabel } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
+import { FolderPanel } from './FolderPanel'
 
 interface MediaLightboxProps {
   media: Media[]
@@ -15,6 +16,7 @@ interface MediaLightboxProps {
 export function MediaLightbox({ media, initialIndex, onClose }: MediaLightboxProps) {
   const [index, setIndex] = useState(initialIndex)
   const [showInfo, setShowInfo] = useState(false)
+  const [showFolders, setShowFolders] = useState(false)
   const [username, setUsername] = useState('')
   const current = media[index]
 
@@ -30,8 +32,20 @@ export function MediaLightbox({ media, initialIndex, onClose }: MediaLightboxPro
     getUser()
   }, [])
 
-  const prev = useCallback(() => setIndex(i => Math.max(0, i - 1)), [])
-  const next = useCallback(() => setIndex(i => Math.min(media.length - 1, i + 1)), [media.length])
+  const prev = useCallback(() => { setIndex(i => Math.max(0, i - 1)); setShowFolders(false) }, [])
+  const next = useCallback(() => { setIndex(i => Math.min(media.length - 1, i + 1)); setShowFolders(false) }, [media.length])
+
+  async function handleDownload() {
+    const res = await fetch(current.file_url)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const ext = current.file_url.split('.').pop()?.split('?')[0] ?? ''
+    a.download = current.title ? `${current.title}.${ext}` : `${current.id}.${ext}`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -54,8 +68,14 @@ export function MediaLightbox({ media, initialIndex, onClose }: MediaLightboxPro
           {index + 1} — {media.length}
         </span>
         <div className="flex items-center gap-5">
-          <button onClick={() => setShowInfo(!showInfo)} className="text-white/20 hover:text-white/60 transition-colors">
+          <button onClick={() => { setShowFolders(!showFolders); setShowInfo(false) }} className="text-white/20 hover:text-white/60 transition-colors">
+            <FolderPlus className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={() => { setShowInfo(!showInfo); setShowFolders(false) }} className="text-white/20 hover:text-white/60 transition-colors">
             <Info className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={handleDownload} title="Download" className="text-white/20 hover:text-white/60 transition-colors">
+            <Download className="w-3.5 h-3.5" />
           </button>
           <button onClick={onClose} className="text-white/20 hover:text-white/60 transition-colors">
             <X className="w-4 h-4" />
@@ -63,8 +83,13 @@ export function MediaLightbox({ media, initialIndex, onClose }: MediaLightboxPro
         </div>
       </div>
 
+      {/* Folder panel overlay */}
+      {showFolders && (
+        <FolderPanel mediaId={current.id} onClose={() => setShowFolders(false)} />
+      )}
+
       {/* Main content */}
-      <div className="flex-1 flex items-center justify-center relative min-h-0 px-12 py-8">
+      <div className="flex-1 flex items-center justify-center relative min-h-0 px-4 sm:px-12 py-4 sm:py-8">
         {index > 0 && (
           <button onClick={prev} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/60 transition-colors z-10">
             <ChevronLeft className="w-6 h-6" />
@@ -91,7 +116,6 @@ export function MediaLightbox({ media, initialIndex, onClose }: MediaLightboxPro
             <video
               src={current.file_url}
               controls
-              controlsList="nodownload"
               className="max-h-[82vh] max-w-full"
             />
           ) : (
@@ -111,7 +135,7 @@ export function MediaLightbox({ media, initialIndex, onClose }: MediaLightboxPro
 
       {/* Info panel */}
       {showInfo && (
-        <div className="border-t border-white/[0.06] px-5 py-3.5 text-[10px] text-white/30 flex flex-wrap gap-6 font-mono tracking-wide">
+        <div className="border-t border-white/[0.06] px-5 py-3.5 text-[10px] text-white/30 flex flex-wrap gap-3 sm:gap-6 font-mono tracking-wide">
           {current.title && <span><span className="text-white/15 mr-2">title</span>{current.title}</span>}
           {current.season && <span><span className="text-white/15 mr-2">season</span>{brandLabel(current.season.brand)} {current.season.period}{current.season.year}</span>}
           {current.celebrity && <span><span className="text-white/15 mr-2">celebrity</span>{current.celebrity.name}</span>}
