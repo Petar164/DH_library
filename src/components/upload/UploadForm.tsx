@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { formatFileSize } from '@/lib/utils'
-import { Upload, X, CheckCircle, Plus } from 'lucide-react'
+import { Upload, X, CheckCircle, Plus, Check } from 'lucide-react'
 import { Folder, FolderType, MediaType } from '@/types'
 
 interface UploadFormProps {
@@ -43,8 +43,8 @@ export function UploadForm({ folders }: UploadFormProps) {
   const [mediaType, setMediaType] = useState<MediaType>('image')
   const [tags, setTags] = useState('')
 
-  // Folder selection
-  const [folderId, setFolderId] = useState('')
+  // Folder selection — multiple
+  const [folderIds, setFolderIds] = useState<Set<string>>(new Set())
   const [creatingFolder, setCreatingFolder] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
   const [newFolderType, setNewFolderType] = useState<FolderType>('season')
@@ -54,6 +54,14 @@ export function UploadForm({ folders }: UploadFormProps) {
   const [progress, setProgress] = useState(0)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
+
+  function toggleFolder(id: string) {
+    setFolderIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
 
   function handleFiles(selected: FileList | null) {
     if (!selected) return
@@ -73,7 +81,7 @@ export function UploadForm({ folders }: UploadFormProps) {
     if (!res.ok) { setError(data.error); return }
     const created = { id: data.id, name: data.name, type: data.type as FolderType }
     setLocalFolders(prev => [created, ...prev])
-    setFolderId(data.id)
+    setFolderIds(prev => new Set([...prev, data.id]))
     setCreatingFolder(false)
     setNewFolderName('')
     setNewFolderType('season')
@@ -82,7 +90,7 @@ export function UploadForm({ folders }: UploadFormProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (files.length === 0) { setError('Select at least one file'); return }
-    if (!folderId) { setError('Choose a folder'); return }
+    if (folderIds.size === 0) { setError('Choose at least one folder'); return }
     setUploading(true)
     setError('')
 
@@ -90,7 +98,9 @@ export function UploadForm({ folders }: UploadFormProps) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setError('Not authenticated'); setUploading(false); return }
 
+    const folderList = Array.from(folderIds)
     let uploaded = 0
+
     for (const file of files) {
       const ext = file.name.split('.').pop()
       const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
@@ -112,16 +122,18 @@ export function UploadForm({ folders }: UploadFormProps) {
       }).select('id').single()
 
       if (inserted) {
-        const folderRes = await fetch(`/api/folders/${folderId}/media`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mediaId: inserted.id }),
-        })
-        if (!folderRes.ok) {
-          const d = await folderRes.json()
-          setError(d.error ?? 'Failed to add file to folder')
-          setUploading(false)
-          return
+        for (const fid of folderList) {
+          const folderRes = await fetch(`/api/folders/${fid}/media`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mediaId: inserted.id }),
+          })
+          if (!folderRes.ok) {
+            const d = await folderRes.json()
+            setError(d.error ?? 'Failed to add file to folder')
+            setUploading(false)
+            return
+          }
         }
       }
 
@@ -131,10 +143,8 @@ export function UploadForm({ folders }: UploadFormProps) {
 
     setDone(true)
     setUploading(false)
-    setTimeout(() => router.push(`/library/folders/${folderId}`), 1500)
+    setTimeout(() => router.push(folderList.length === 1 ? `/library/folders/${folderList[0]}` : '/library'), 1500)
   }
-
-  const selectedFolder = localFolders.find(f => f.id === folderId)
 
   if (done) {
     return (
@@ -198,23 +208,38 @@ export function UploadForm({ folders }: UploadFormProps) {
 
       {/* Folder picker */}
       <div className="flex flex-col gap-3">
-        <label className={labelClass}>Folder <span className="text-red-400">*</span></label>
+        <label className={labelClass}>
+          Folders <span className="text-red-400">*</span>
+          {folderIds.size > 0 && (
+            <span className="ml-2 text-black normal-case">{folderIds.size} selected</span>
+          )}
+        </label>
 
         {!creatingFolder ? (
           <div className="flex flex-col gap-2">
-            <select
-              value={folderId}
-              onChange={e => setFolderId(e.target.value)}
-              className={selectClass}
-              required
-            >
-              <option value="">— select a folder —</option>
-              {localFolders.map(f => (
-                <option key={f.id} value={f.id}>
-                  {f.name} · {TYPE_LABELS[f.type]}
-                </option>
-              ))}
-            </select>
+            <div className="flex flex-col divide-y divide-zinc-100 border border-zinc-200 max-h-48 overflow-y-auto">
+              {localFolders.length === 0 ? (
+                <p className="text-[10px] font-mono text-zinc-400 px-3 py-3">No folders yet — create one below</p>
+              ) : (
+                localFolders.map(f => {
+                  const selected = folderIds.has(f.id)
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => toggleFolder(f.id)}
+                      className={`flex items-center justify-between px-3 py-2.5 text-left transition-colors ${selected ? 'bg-black text-white' : 'hover:bg-zinc-50'}`}
+                    >
+                      <span className="text-xs font-mono truncate">{f.name}</span>
+                      <span className={`text-[9px] font-mono uppercase tracking-[0.1em] flex items-center gap-2 flex-shrink-0 ml-2 ${selected ? 'text-white/50' : 'text-zinc-400'}`}>
+                        {TYPE_LABELS[f.type]}
+                        {selected && <Check className="w-3 h-3" />}
+                      </span>
+                    </button>
+                  )
+                })
+              )}
+            </div>
             <button
               type="button"
               onClick={() => setCreatingFolder(true)}
@@ -271,12 +296,6 @@ export function UploadForm({ folders }: UploadFormProps) {
             </div>
           </div>
         )}
-
-        {selectedFolder && (
-          <p className="text-[10px] font-mono text-zinc-400">
-            → <span className="text-black">{selectedFolder.name}</span> · {TYPE_LABELS[selectedFolder.type]}
-          </p>
-        )}
       </div>
 
       {/* Media type */}
@@ -308,7 +327,7 @@ export function UploadForm({ folders }: UploadFormProps) {
         </div>
       )}
 
-      <Button type="submit" loading={uploading} disabled={files.length === 0 || !folderId} size="lg">
+      <Button type="submit" loading={uploading} disabled={files.length === 0 || folderIds.size === 0} size="lg">
         Upload {files.length > 1 ? `${files.length} files` : 'file'}
       </Button>
     </form>

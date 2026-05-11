@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Media } from '@/types'
-import { X, ChevronLeft, ChevronRight, Info, FolderPlus, Download } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Info, FolderPlus, Download, FolderMinus, Trash2 } from 'lucide-react'
 import { brandLabel } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { FolderPanel } from './FolderPanel'
@@ -11,9 +11,11 @@ interface MediaLightboxProps {
   media: Media[]
   initialIndex: number
   onClose: () => void
+  folderId?: string
+  isAdmin?: boolean
 }
 
-export function MediaLightbox({ media, initialIndex, onClose }: MediaLightboxProps) {
+export function MediaLightbox({ media, initialIndex, onClose, folderId, isAdmin }: MediaLightboxProps) {
   const [index, setIndex] = useState(initialIndex)
   const [showInfo, setShowInfo] = useState(false)
   const [showFolders, setShowFolders] = useState(false)
@@ -34,6 +36,25 @@ export function MediaLightbox({ media, initialIndex, onClose }: MediaLightboxPro
 
   const prev = useCallback(() => { setIndex(i => Math.max(0, i - 1)); setShowFolders(false) }, [])
   const next = useCallback(() => { setIndex(i => Math.min(media.length - 1, i + 1)); setShowFolders(false) }, [media.length])
+
+  async function handleRemoveFromFolder() {
+    if (!folderId) return
+    if (!confirm('Remove this from the folder?')) return
+    await fetch(`/api/folders/${folderId}/media`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mediaId: current.id }),
+    })
+    onClose()
+    window.location.reload()
+  }
+
+  async function handleDelete() {
+    if (!confirm('Permanently delete this file? This cannot be undone.')) return
+    await fetch(`/api/media/${current.id}`, { method: 'DELETE' })
+    onClose()
+    window.location.reload()
+  }
 
   async function handleDownload() {
     const res = await fetch(current.file_url)
@@ -71,6 +92,16 @@ export function MediaLightbox({ media, initialIndex, onClose }: MediaLightboxPro
           <button onClick={() => { setShowFolders(!showFolders); setShowInfo(false) }} className="text-white/20 hover:text-white/60 transition-colors">
             <FolderPlus className="w-3.5 h-3.5" />
           </button>
+          {folderId && (
+            <button onClick={handleRemoveFromFolder} title="Remove from folder" className="text-white/20 hover:text-yellow-400 transition-colors">
+              <FolderMinus className="w-3.5 h-3.5" />
+            </button>
+          )}
+          {isAdmin && (
+            <button onClick={handleDelete} title="Delete file" className="text-white/20 hover:text-red-400 transition-colors">
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
           <button onClick={() => { setShowInfo(!showInfo); setShowFolders(false) }} className="text-white/20 hover:text-white/60 transition-colors">
             <Info className="w-3.5 h-3.5" />
           </button>

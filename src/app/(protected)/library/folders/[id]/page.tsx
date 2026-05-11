@@ -74,7 +74,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
-      <MediaGrid media={media} showSeason />
+      <MediaGrid media={media} showSeason folderId={id} isAdmin={isAdmin} />
     </div>
   )
 }

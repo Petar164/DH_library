@@ -18,17 +18,17 @@ export async function DELETE(
     .eq('id', user.id)
     .single()
 
-  if (!profile || profile.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
   const { data: media } = await supabase
     .from('media')
-    .select('file_path')
+    .select('file_path, uploaded_by')
     .eq('id', id)
     .single()
 
   if (!media) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  const isAdmin = profile?.role === 'admin'
+  const isOwner = media.uploaded_by === user.id
+  if (!isAdmin && !isOwner) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const admin = await createAdminClient()
 

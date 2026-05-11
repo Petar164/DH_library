@@ -9,9 +9,11 @@ import { Play, FileText } from 'lucide-react'
 interface MediaGridProps {
   media: Media[]
   showSeason?: boolean
+  folderId?: string
+  isAdmin?: boolean
 }
 
-export function MediaGrid({ media, showSeason }: MediaGridProps) {
+export function MediaGrid({ media, showSeason, folderId, isAdmin }: MediaGridProps) {
   const [selected, setSelected] = useState<number | null>(null)
 
   if (media.length === 0) {
@@ -78,6 +80,8 @@ export function MediaGrid({ media, showSeason }: MediaGridProps) {
           media={media}
           initialIndex={selected}
           onClose={() => setSelected(null)}
+          folderId={folderId}
+          isAdmin={isAdmin}
         />
       )}
     </>
