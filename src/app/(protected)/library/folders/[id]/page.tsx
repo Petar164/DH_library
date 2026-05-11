@@ -33,7 +33,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
     .eq('folder_id', id)
     .order('added_at', { ascending: false })
 
-  const media = (folderMedia ?? []).map(fm => fm.media).filter(Boolean) as Media[]
+  const media = (folderMedia ?? []).map(fm => fm.media).filter(Boolean) as unknown as Media[]
 
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user!.id).single()
