@@ -126,8 +126,8 @@ export function NoteCard({ note }: { note: NoteData }) {
           className="px-2 pt-1 pb-2"
           style={{
             backgroundImage: `repeating-linear-gradient(
-              transparent, transparent 17px,
-              #AAAAAA 17px, #AAAAAA 18px
+              transparent, transparent 19px,
+              #AAAAAA 19px, #AAAAAA 20px
             )`,
             backgroundPositionY: note.tag ? '8px' : '4px',
           }}
@@ -135,8 +135,8 @@ export function NoteCard({ note }: { note: NoteData }) {
           <pre
             className="font-[var(--font-pixel)] text-black whitespace-pre-wrap break-words"
             style={{
-              fontSize: 12,
-              lineHeight: '18px',
+              fontSize: 14,
+              lineHeight: '20px',
               WebkitFontSmoothing: 'none',
               letterSpacing: '0.02em',
             }}

@@ -10,6 +10,8 @@ const NOTE_COLORS: { value: 'white' | 'yellow' | 'gray'; label: string; bg: stri
   { value: 'gray',   label: 'Gray',   bg: '#DDDDDD' },
 ]
 
+const px: React.CSSProperties = { WebkitFontSmoothing: 'none' as const }
+
 interface BulletinBoardProps {
   notes: NoteData[]
   isAdmin: boolean
@@ -25,23 +27,23 @@ export function BulletinBoard({ notes, isAdmin }: BulletinBoardProps) {
   const [saving, setSaving]   = useState(false)
   const [error, setError]     = useState('')
 
+  function openModal() { setShowModal(true); setError('') }
+  function closeModal() { setShowModal(false); setTitle(''); setContent(''); setTag(''); setColor('white'); setError('') }
+
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
     if (!title.trim() || !content.trim()) return
     setSaving(true)
     setError('')
-
     const res = await fetch('/api/infopoint', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: title.trim(), content: content.trim(), tag: tag || null, color }),
     })
     const data = await res.json()
-    if (!res.ok) { setError(data.error ?? 'Failed to create note'); setSaving(false); return }
-
-    setShowModal(false)
-    setTitle(''); setContent(''); setTag(''); setColor('white')
+    if (!res.ok) { setError(data.error ?? 'Failed'); setSaving(false); return }
     setSaving(false)
+    closeModal()
     router.refresh()
   }
 
@@ -55,147 +57,172 @@ export function BulletinBoard({ notes, isAdmin }: BulletinBoardProps) {
         imageRendering: 'pixelated',
       }}
     >
-      {/* Menu-bar header */}
+      {/* Header — taller on mobile for tap comfort */}
       <div
-        className="sticky top-0 z-30 flex items-center justify-between px-4"
-        style={{ height: 20, background: '#fff', borderBottom: '1px solid #000' }}
+        className="sticky top-0 z-30 flex items-center justify-between px-3 sm:px-4"
+        style={{ height: 36, background: '#fff', borderBottom: '1px solid #000' }}
       >
-        <span className="font-[var(--font-pixel)] text-black" style={{ fontSize: 13, WebkitFontSmoothing: 'none', letterSpacing: '0.05em' }}>
+        <span className="font-[var(--font-pixel)] text-black" style={{ fontSize: 14, ...px, letterSpacing: '0.05em' }}>
           INFOPOINT
         </span>
-        <span className="font-[var(--font-pixel)] text-black opacity-50" style={{ fontSize: 11, WebkitFontSmoothing: 'none' }}>
+        <span className="font-[var(--font-pixel)] text-black opacity-40 hidden sm:block" style={{ fontSize: 11, ...px }}>
           {notes.length} notes pinned
         </span>
         {isAdmin && (
           <button
-            onClick={() => setShowModal(true)}
-            className="font-[var(--font-pixel)] text-black"
-            style={{ fontSize: 11, WebkitFontSmoothing: 'none', border: '1px solid #000', padding: '0 6px', background: '#fff', cursor: 'pointer' }}
+            onClick={openModal}
+            className="font-[var(--font-pixel)] text-white active:opacity-70"
+            style={{ fontSize: 13, ...px, border: '1px solid #000', padding: '4px 12px', background: '#000', cursor: 'pointer', minHeight: 28 }}
           >
             + New
           </button>
         )}
       </div>
 
-      {/* Notes */}
+      {/* Notes grid */}
       {notes.length === 0 ? (
-        <div className="flex items-center justify-center py-32">
-          <span className="font-[var(--font-pixel)] text-black opacity-30" style={{ fontSize: 14, WebkitFontSmoothing: 'none' }}>
+        <div className="flex flex-col items-center justify-center py-32 gap-4 px-8 text-center">
+          <span className="font-[var(--font-pixel)] text-black opacity-30" style={{ fontSize: 14, ...px }}>
             — board is empty —
           </span>
+          {isAdmin && (
+            <button
+              onClick={openModal}
+              className="font-[var(--font-pixel)] text-white"
+              style={{ fontSize: 13, ...px, border: '1px solid #000', padding: '6px 16px', background: '#000', cursor: 'pointer' }}
+            >
+              Pin the first note
+            </button>
+          )}
         </div>
       ) : (
-        <div className="p-8 pt-10 columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-10">
+        <div className="p-4 sm:p-8 pt-6 sm:pt-10 columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 sm:gap-10">
           {notes.map(note => (
-            <div key={note.id} className="break-inside-avoid mb-10 inline-block w-full">
+            <div key={note.id} className="break-inside-avoid mb-6 sm:mb-10 inline-block w-full">
               <NoteCard note={note} />
             </div>
           ))}
         </div>
       )}
 
-      {/* Create modal — Mac OS dialog style */}
+      {/* Create modal — slides up from bottom on mobile, centered on desktop */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}>
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={e => { if (e.target === e.currentTarget) closeModal() }}
+        >
           <div
-            className="w-full max-w-md"
-            style={{ background: '#fff', border: '2px solid #000', boxShadow: '4px 4px 0 #000', imageRendering: 'pixelated' }}
+            className="w-full sm:max-w-md sm:mx-4"
+            style={{
+              background: '#fff',
+              border: '2px solid #000',
+              boxShadow: '4px 4px 0 #000',
+              imageRendering: 'pixelated',
+              /* full width sheet on mobile, rounded-ish top edge via border */
+              borderBottom: 'none',
+            }}
           >
-            {/* Dialog title bar */}
+            {/* Title bar */}
             <div
-              className="flex items-center gap-1.5 px-2"
-              style={{ height: 20, background: '#000', borderBottom: '1px solid #000' }}
+              className="flex items-center gap-2 px-3"
+              style={{ height: 32, background: '#000', borderBottom: '1px solid #000' }}
             >
-              <div style={{ width: 9, height: 9, border: '1px solid #fff', background: '#000', flexShrink: 0 }} />
-              <span className="font-[var(--font-pixel)] text-white" style={{ fontSize: 13, WebkitFontSmoothing: 'none' }}>
-                New Note
-              </span>
+              <div style={{ width: 10, height: 10, border: '1px solid #fff', background: '#000', flexShrink: 0 }} />
+              <span className="font-[var(--font-pixel)] text-white flex-1" style={{ fontSize: 14, ...px }}>New Note</span>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="font-[var(--font-pixel)] text-white opacity-60 hover:opacity-100"
+                style={{ fontSize: 14, ...px, background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}
+              >
+                ✕
+              </button>
             </div>
 
-            <form onSubmit={handleCreate} className="p-4 flex flex-col gap-3">
+            <form onSubmit={handleCreate} className="p-4 flex flex-col gap-4">
               {/* Title */}
-              <div className="flex flex-col gap-1">
-                <label className="font-[var(--font-pixel)] text-black" style={{ fontSize: 11, WebkitFontSmoothing: 'none' }}>TITLE</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="font-[var(--font-pixel)] text-black" style={{ fontSize: 11, ...px }}>TITLE</label>
                 <input
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   required
-                  className="font-[var(--font-pixel)] text-black w-full px-2 py-1"
-                  style={{ fontSize: 13, border: '1px solid #000', outline: 'none', WebkitFontSmoothing: 'none' }}
+                  placeholder="Note title..."
+                  className="font-[var(--font-pixel)] text-black w-full px-2"
+                  style={{ fontSize: 14, height: 36, border: '1px solid #000', outline: 'none', ...px, background: '#fff' }}
                 />
               </div>
 
-              {/* Tag */}
-              <div className="flex flex-col gap-1">
-                <label className="font-[var(--font-pixel)] text-black" style={{ fontSize: 11, WebkitFontSmoothing: 'none' }}>TAG</label>
-                <select
-                  value={tag}
-                  onChange={e => setTag(e.target.value as NoteTag | '')}
-                  className="font-[var(--font-pixel)] text-black w-full px-2 py-1"
-                  style={{ fontSize: 12, border: '1px solid #000', outline: 'none', background: '#fff', WebkitFontSmoothing: 'none' }}
-                >
-                  <option value="">— none —</option>
-                  {NOTE_TAGS.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
+              {/* Tag + Color row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-[var(--font-pixel)] text-black" style={{ fontSize: 11, ...px }}>TAG</label>
+                  <select
+                    value={tag}
+                    onChange={e => setTag(e.target.value as NoteTag | '')}
+                    className="font-[var(--font-pixel)] text-black w-full px-2"
+                    style={{ fontSize: 12, height: 36, border: '1px solid #000', outline: 'none', background: '#fff', ...px }}
+                  >
+                    <option value="">— none —</option>
+                    {NOTE_TAGS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
 
-              {/* Color */}
-              <div className="flex flex-col gap-1">
-                <label className="font-[var(--font-pixel)] text-black" style={{ fontSize: 11, WebkitFontSmoothing: 'none' }}>NOTE COLOR</label>
-                <div className="flex gap-2">
-                  {NOTE_COLORS.map(c => (
-                    <button
-                      key={c.value}
-                      type="button"
-                      onClick={() => setColor(c.value)}
-                      className="flex items-center gap-1"
-                      style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}
-                    >
-                      <div style={{
-                        width: 16, height: 16,
-                        background: c.bg,
-                        border: color === c.value ? '2px solid #000' : '1px solid #888',
-                      }} />
-                      <span className="font-[var(--font-pixel)] text-black" style={{ fontSize: 10, WebkitFontSmoothing: 'none' }}>{c.label}</span>
-                    </button>
-                  ))}
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-[var(--font-pixel)] text-black" style={{ fontSize: 11, ...px }}>COLOR</label>
+                  <div className="flex gap-2 items-center" style={{ height: 36 }}>
+                    {NOTE_COLORS.map(c => (
+                      <button
+                        key={c.value}
+                        type="button"
+                        title={c.label}
+                        onClick={() => setColor(c.value)}
+                        style={{
+                          width: 28, height: 28, flexShrink: 0,
+                          background: c.bg,
+                          border: color === c.value ? '2px solid #000' : '1px solid #888',
+                          cursor: 'pointer',
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
 
               {/* Content */}
-              <div className="flex flex-col gap-1">
-                <label className="font-[var(--font-pixel)] text-black" style={{ fontSize: 11, WebkitFontSmoothing: 'none' }}>CONTENT</label>
+              <div className="flex flex-col gap-1.5">
+                <label className="font-[var(--font-pixel)] text-black" style={{ fontSize: 11, ...px }}>CONTENT</label>
                 <textarea
                   value={content}
                   onChange={e => setContent(e.target.value)}
                   required
-                  rows={7}
-                  className="font-[var(--font-pixel)] text-black w-full px-2 py-1 resize-none"
-                  style={{ fontSize: 12, lineHeight: '18px', border: '1px solid #000', outline: 'none', WebkitFontSmoothing: 'none' }}
+                  rows={6}
+                  placeholder="Write your note here..."
+                  className="font-[var(--font-pixel)] text-black w-full px-2 py-2 resize-none"
+                  style={{ fontSize: 13, lineHeight: '20px', border: '1px solid #000', outline: 'none', ...px, background: '#fff' }}
                 />
               </div>
 
               {error && (
-                <p className="font-[var(--font-pixel)] text-black" style={{ fontSize: 11, WebkitFontSmoothing: 'none' }}>
-                  ⚠ {error}
-                </p>
+                <p className="font-[var(--font-pixel)] text-black" style={{ fontSize: 11, ...px }}>⚠ {error}</p>
               )}
 
-              {/* Buttons */}
-              <div className="flex gap-2 justify-end pt-1">
+              {/* Action buttons — full width on mobile */}
+              <div className="flex gap-2 pt-1 pb-safe">
                 <button
                   type="button"
-                  onClick={() => { setShowModal(false); setError('') }}
-                  className="font-[var(--font-pixel)] text-black px-4"
-                  style={{ fontSize: 12, height: 24, border: '1px solid #000', background: '#fff', cursor: 'pointer', WebkitFontSmoothing: 'none' }}
+                  onClick={closeModal}
+                  className="font-[var(--font-pixel)] text-black flex-1 sm:flex-none sm:px-6 active:opacity-70"
+                  style={{ fontSize: 13, height: 40, border: '1px solid #000', background: '#fff', cursor: 'pointer', ...px }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="font-[var(--font-pixel)] text-white px-4"
-                  style={{ fontSize: 12, height: 24, border: '1px solid #000', background: '#000', cursor: saving ? 'wait' : 'pointer', WebkitFontSmoothing: 'none', opacity: saving ? 0.6 : 1 }}
+                  className="font-[var(--font-pixel)] text-white flex-1 sm:flex-none sm:px-6 active:opacity-70"
+                  style={{ fontSize: 13, height: 40, border: '1px solid #000', background: '#000', cursor: saving ? 'wait' : 'pointer', ...px, opacity: saving ? 0.6 : 1 }}
                 >
                   {saving ? 'Pinning...' : 'Pin Note'}
                 </button>
