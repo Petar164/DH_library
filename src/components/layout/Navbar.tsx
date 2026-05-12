@@ -26,6 +26,7 @@ export function Navbar({ profile }: NavbarProps) {
 
   const navLinks = [
     { href: '/library', label: 'Library' },
+    { href: '/infopoint', label: 'Infopoint' },
     ...(profile.role === 'contributor' || profile.role === 'admin'
       ? [{ href: '/upload', label: 'Upload' }]
       : []),

@@ -23,6 +23,9 @@ export interface Profile {
   full_name: string | null
   bio: string | null
   avatar_url: string | null
+  banner_url: string | null
+  text_color: string | null
+  bg_color: string | null
   role: Role
   created_at: string
   updated_at: string

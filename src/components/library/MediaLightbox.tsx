@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Media } from '@/types'
+import Link from 'next/link'
 import { X, ChevronLeft, ChevronRight, Info, FolderPlus, Download, FolderMinus, Trash2 } from 'lucide-react'
 import { brandLabel } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -171,7 +172,14 @@ export function MediaLightbox({ media, initialIndex, onClose, folderId, isAdmin 
           {current.season && <span><span className="text-white/15 mr-2">season</span>{brandLabel(current.season.brand)} {current.season.period}{current.season.year}</span>}
           {current.celebrity && <span><span className="text-white/15 mr-2">celebrity</span>{current.celebrity.name}</span>}
           {current.type && <span><span className="text-white/15 mr-2">type</span>{current.type}</span>}
-          {current.uploader && <span><span className="text-white/15 mr-2">via</span>@{current.uploader.username}</span>}
+          {current.uploader && (
+            <span>
+              <span className="text-white/15 mr-2">via</span>
+              <Link href={`/profile/${current.uploader.username}`} onClick={onClose} className="hover:text-white transition-colors">
+                @{current.uploader.username}
+              </Link>
+            </span>
+          )}
         </div>
       )}
     </div>
