@@ -51,7 +51,7 @@ export default function SignupPage() {
       return
     }
 
-    router.push('/pending')
+    router.push('/library')
     router.refresh()
   }
 
@@ -93,7 +93,7 @@ export default function SignupPage() {
             <div>
               <Textarea
                 id="bio"
-                label="Bio — why do you want access?"
+                label="Bio (optional)"
                 placeholder="tell us about yourself and your interest in the archive..."
                 value={bio}
                 onChange={e => setBio(e.target.value)}
@@ -111,7 +111,7 @@ export default function SignupPage() {
             </div>
 
             <p className="text-[9px] tracking-[0.1em] text-zinc-400 text-center leading-relaxed">
-              access is reviewed and approved manually.
+              you'll get access as soon as you sign up.
             </p>
           </form>
         )}
