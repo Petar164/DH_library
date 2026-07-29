@@ -111,7 +111,7 @@ export default function SignupPage() {
             </div>
 
             <p className="text-[9px] tracking-[0.1em] text-zinc-400 text-center leading-relaxed">
-              you'll get access as soon as you sign up.
+              you&apos;ll get access as soon as you sign up.
             </p>
           </form>
         )}
