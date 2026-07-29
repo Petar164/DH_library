@@ -45,10 +45,8 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <p className="text-center text-[10px] tracking-[0.15em] uppercase text-zinc-400 mt-6">
-          <Link href="/forgot-password" className="text-black underline underline-offset-4">
-            Forgot password?
-          </Link>
+        <p className="text-center text-[9px] tracking-[0.1em] text-zinc-400 mt-6 leading-relaxed">
+          forgot your password? ask an admin — they can issue you a new one.
         </p>
 
         <p className="text-center text-[10px] tracking-[0.15em] uppercase text-zinc-400 mt-8">
