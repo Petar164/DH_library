@@ -9,6 +9,20 @@ export function UserRow({ user }: { user: Profile }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [role, setRole] = useState<Role>(user.role)
+  const [tempPassword, setTempPassword] = useState<string | null>(null)
+
+  async function resetPassword() {
+    if (!confirm(`Set a new temporary password for @${user.username}? Their current password stops working immediately.`)) return
+    setLoading(true)
+    const res = await fetch('/api/admin/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id }),
+    })
+    const data = await res.json()
+    setTempPassword(res.ok ? data.password : `Failed: ${data.error ?? 'unknown error'}`)
+    setLoading(false)
+  }
 
   async function updateRole(newRole: Role | 'revoked') {
     setLoading(true)
@@ -84,6 +98,14 @@ export function UserRow({ user }: { user: Profile }) {
           </select>
         )}
 
+        <button
+          onClick={resetPassword}
+          disabled={loading}
+          className="text-[9px] tracking-[0.15em] uppercase text-zinc-300 hover:text-black transition-colors disabled:opacity-30"
+        >
+          Reset pw
+        </button>
+
         {role !== 'pending' && (
           <button
             onClick={() => { if (confirm(`Revoke @${user.username}?`)) updateRole('revoked') }}
@@ -94,6 +116,26 @@ export function UserRow({ user }: { user: Profile }) {
           </button>
         )}
       </div>
+
+      {tempPassword && (
+        <div className="col-span-full bg-black text-white px-4 py-3 flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[9px] tracking-[0.25em] uppercase text-white/50 mb-1">
+              Temporary password for @{user.username} — shown once
+            </p>
+            <p className="font-mono text-sm break-all select-all">{tempPassword}</p>
+            <p className="text-[9px] tracking-wide text-white/40 mt-1">
+              send it to them directly and have them change it after signing in.
+            </p>
+          </div>
+          <button
+            onClick={() => setTempPassword(null)}
+            className="text-[9px] tracking-[0.15em] uppercase text-white/50 hover:text-white flex-shrink-0"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
     </div>
   )
 }

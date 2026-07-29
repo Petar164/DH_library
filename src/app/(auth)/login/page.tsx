@@ -45,6 +45,12 @@ export default function LoginPage() {
           </Button>
         </form>
 
+        <p className="text-center text-[10px] tracking-[0.15em] uppercase text-zinc-400 mt-6">
+          <Link href="/forgot-password" className="text-black underline underline-offset-4">
+            Forgot password?
+          </Link>
+        </p>
+
         <p className="text-center text-[10px] tracking-[0.15em] uppercase text-zinc-400 mt-8">
           No account?{' '}
           <Link href="/signup" className="text-black underline underline-offset-4">
