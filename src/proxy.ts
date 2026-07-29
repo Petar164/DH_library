@@ -27,10 +27,7 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  const isAuthRoute =
-    pathname.startsWith('/login') ||
-    pathname.startsWith('/signup') ||
-    pathname.startsWith('/forgot-password')
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup')
   const isAdminRoute = pathname.startsWith('/admin')
   const isUploadRoute = pathname.startsWith('/upload')
   const isApiRoute = pathname.startsWith('/api')
@@ -41,12 +38,6 @@ export async function proxy(request: NextRequest) {
     PUBLIC_PREFIXES.some(p => pathname === p || pathname.startsWith(`${p}/`))
 
   if (isApiRoute) return supabaseResponse
-
-  // Password recovery has to work both signed out and while holding the
-  // short-lived recovery session, so it sits outside the rules below.
-  if (pathname.startsWith('/auth/') || pathname === '/reset-password') {
-    return supabaseResponse
-  }
 
   const { data: { user } } = await supabase.auth.getUser()
 
