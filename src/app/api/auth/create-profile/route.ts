@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     username: username.toLowerCase().trim(),
     full_name: full_name?.trim() || null,
     bio: bio?.trim() || null,
-    role: 'pending',
+    role: 'viewer',
   })
 
   if (error) {

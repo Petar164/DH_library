@@ -8,7 +8,7 @@ create table public.profiles (
   full_name text,
   bio text,
   avatar_url text,
-  role text not null default 'pending' check (role in ('pending', 'viewer', 'contributor', 'admin')),
+  role text not null default 'viewer' check (role in ('pending', 'viewer', 'contributor', 'admin')),
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
