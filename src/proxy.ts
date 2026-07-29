@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const PUBLIC_PREFIXES = ['/library', '/infopoint', '/profile']
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -23,25 +25,39 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
 
   const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup')
-  const isPendingRoute = pathname === '/pending'
   const isAdminRoute = pathname.startsWith('/admin')
+  const isUploadRoute = pathname.startsWith('/upload')
   const isApiRoute = pathname.startsWith('/api')
+
+  // Anyone, signed in or not, can browse these.
+  const isPublicRoute =
+    pathname === '/' ||
+    PUBLIC_PREFIXES.some(p => pathname === p || pathname.startsWith(`${p}/`))
 
   if (isApiRoute) return supabaseResponse
 
-  if (!user) {
-    if (!isAuthRoute) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (isAuthRoute) {
+    if (user) return NextResponse.redirect(new URL('/library', request.url))
     return supabaseResponse
   }
 
-  if (isAuthRoute) {
+  // Approval was removed; the holding page it pointed at is no longer used.
+  if (pathname === '/pending') {
     return NextResponse.redirect(new URL('/library', request.url))
+  }
+
+  if (isPublicRoute) return supabaseResponse
+
+  // Everything past this point is contribution or moderation — sign-in required.
+  if (!user) {
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('next', pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
   const { data: profile } = await supabase
@@ -52,18 +68,11 @@ export async function proxy(request: NextRequest) {
 
   const role = profile?.role
 
-  if (!role || role === 'pending') {
-    if (!isPendingRoute) {
-      return NextResponse.redirect(new URL('/pending', request.url))
-    }
-    return supabaseResponse
-  }
-
-  if (isPendingRoute) {
+  if (isAdminRoute && role !== 'admin') {
     return NextResponse.redirect(new URL('/library', request.url))
   }
 
-  if (isAdminRoute && role !== 'admin') {
+  if (isUploadRoute && role !== 'contributor' && role !== 'admin') {
     return NextResponse.redirect(new URL('/library', request.url))
   }
 

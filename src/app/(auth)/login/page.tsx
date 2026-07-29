@@ -21,7 +21,10 @@ export default function LoginPage() {
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { setError(error.message); setLoading(false); return }
-    router.push('/library')
+
+    // Return to the page that asked for a sign-in, if it was an internal one.
+    const next = new URLSearchParams(window.location.search).get('next')
+    router.push(next?.startsWith('/') && !next.startsWith('//') ? next : '/library')
     router.refresh()
   }
 
@@ -30,7 +33,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm bg-white/80 backdrop-blur-sm p-10 border border-zinc-200">
         <div className="mb-10 text-center">
           <h1 className="font-[var(--font-pixel)] text-[22px] tracking-[0.2em] uppercase mb-1 leading-none">Archive</h1>
-          <p className="text-[10px] tracking-[0.2em] uppercase text-zinc-400">Private access</p>
+          <p className="text-[10px] tracking-[0.2em] uppercase text-zinc-400">Sign in to contribute</p>
         </div>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-7">
@@ -45,7 +48,13 @@ export default function LoginPage() {
         <p className="text-center text-[10px] tracking-[0.15em] uppercase text-zinc-400 mt-8">
           No account?{' '}
           <Link href="/signup" className="text-black underline underline-offset-4">
-            Request access
+            Sign up
+          </Link>
+        </p>
+
+        <p className="text-center text-[10px] tracking-[0.15em] uppercase text-zinc-400 mt-3">
+          <Link href="/library" className="text-black underline underline-offset-4">
+            Browse the archive
           </Link>
         </p>
       </div>
