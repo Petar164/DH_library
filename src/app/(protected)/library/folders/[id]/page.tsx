@@ -36,8 +36,10 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
   const media = (folderMedia ?? []).map(fm => fm.media).filter(Boolean) as unknown as Media[]
 
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user!.id).single()
-  const isOwner = folder.created_by === user?.id
+  const profile = user
+    ? (await supabase.from('profiles').select('role').eq('id', user.id).single()).data
+    : null
+  const isOwner = !!user && folder.created_by === user.id
   const isAdmin = profile?.role === 'admin'
 
   return (

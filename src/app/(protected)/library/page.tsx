@@ -12,7 +12,9 @@ export default async function LibraryPage() {
     .order('created_at', { ascending: false })
 
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user!.id).single()
+  const profile = user
+    ? (await supabase.from('profiles').select('role').eq('id', user.id).single()).data
+    : null
   const canCreate = ['contributor', 'admin'].includes(profile?.role ?? '')
 
   const normalised: Folder[] = (folders ?? []).map(f => ({
